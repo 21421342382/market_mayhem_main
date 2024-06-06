@@ -46,4 +46,12 @@ app.get('/investments', (req, res) => {
     res.json(investmentList);
 });
 
+// New endpoint to clear all investment history
+app.delete('/clear-investments', (req, res) => {
+    investmentList = []; // Reset investment list to an empty array
+    io.emit('investmentList', investmentList); // Emit the empty list to all clients
+    console.log('All investment history cleared');
+    res.status(200).send('All investment history cleared');
+});
+
 server.listen(5000, () => console.log('User actions server listening on port 5000'));
