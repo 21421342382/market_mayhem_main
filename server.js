@@ -12,7 +12,7 @@ const io = socketIo(server);
 let investmentList = []; // Store the list of investments
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.send('Welcome to the Market Mayhem server!');
 });
 
 io.on('connection', (socket) => {
@@ -39,6 +39,11 @@ app.post('/investment', (req, res) => {
     console.log('Broadcasted updated investment list');
 
     res.status(200).send('Investment added');
+});
+
+// New endpoint to get the investment list as JSON
+app.get('/investments', (req, res) => {
+    res.json(investmentList);
 });
 
 server.listen(5000, () => console.log('User actions server listening on port 5000'));
