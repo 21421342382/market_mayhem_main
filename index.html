@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Mayhem Candlestick Chart</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    
+    }
+    #chart {
+      width: 100%;
+      height: 100vh; /* Set chart height to fill the viewport */
+    }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+
+  <script>
+    const socket = io();
+    const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+      width: window.innerWidth * 0.9,
+      height: window.innerHeight, // Adjust height to fill the viewport
+      background: '#000000',
+        textColor: '#ffffff'
+    });
+    const candlestickSeries = chart.addCandlestickSeries();
+
+    socket.on('investmentList', (data) => {
+      console.log('Received investment data:', data);
+      updateChart(data);
+    });
+
+    function updateChart(data) {
+      const groupedData = groupDataByMinute(data);
+      console.log('Grouped data for chart:', groupedData);
+      candlestickSeries.setData(groupedData);
+    }
+
+    function groupDataByMinute(data) {
+      const grouped = {};
+
+      data.forEach(item => {
+        const time = Math.floor(item.timestamp / 60) * 60; // Group by minute
+        if (!grouped[time]) {
+          grouped[time] = { time, open: item.amount, high: item.amount, low: item.amount, close: item.amount };
+        } else {
+          const entry = grouped[time];
+          entry.high = Math.max(entry.high, item.amount + 10);
+          entry.low = Math.max(entry.low, item.amount- 10);
+          entry.close = item.amount + 10;
+        }
+      });
+
+      return Object.values(grouped);
+    }
+  </script>
+</body>
+</html>
