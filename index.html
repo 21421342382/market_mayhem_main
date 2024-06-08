@@ -31,34 +31,41 @@
     });
     const candlestickSeries = chart.addCandlestickSeries();
 
-    socket.on('investmentList', (data) => {
-      console.log('Received investment data:', data);
-      updateChart(data);
-    });
+        socket.on('investmentList', (data) => {
+            console.log('Received investment data:', data);
+            updateChart(data);
+        });
 
-    function updateChart(data) {
-      const groupedData = groupDataByMinute(data);
-      console.log('Grouped data for chart:', groupedData);
-      candlestickSeries.setData(groupedData);
-    }
-
-    function groupDataByMinute(data) {
-      const grouped = {};
-
-      data.forEach(item => {
-        const time = Math.floor(item.timestamp / 60) * 60; // Group by minute
-        if (!grouped[time]) {
-          grouped[time] = { time, open: item.amount, high: item.amount, low: item.amount, close: item.amount };
-        } else {
-          const entry = grouped[time];
-          entry.high = Math.max(entry.high, item.amount + 10);
-          entry.low = Math.max(entry.low, item.amount- 10);
-          entry.close = item.amount + 10;
+        function updateChart(data) {
+            const groupedData = groupDataByMinute(data);
+            console.log('Grouped data for chart:', groupedData);
+            candlestickSeries.setData(groupedData);
+            updatePointsColumn(groupedData);
         }
-      });
 
-      return Object.values(grouped);
-    }
-  </script>
+        function groupDataByMinute(data) {
+            const grouped = {};
+
+            data.forEach(item => {
+                const time = Math.floor(item.timestamp / 10) * 10; // Group by seconds
+                if (!grouped[time]) {
+                    grouped[time] = { time, open: item.amount, high: item.amount, low: item.amount, close: item.amount };
+                } else {
+                    const entry = grouped[time];
+                    entry.high = Math.max(entry.high, item.amount);
+                    entry.low = Math.min(entry.low, item.amount);
+                    entry.close = item.amount;
+                }
+            });
+
+            return Object.values(grouped);
+        }
+
+        function updatePointsColumn(data) {
+            // Calculate and display the points column
+            const pointsColumn = data.map(entry => entry.close).join(', ');
+            document.getElementById('pointsColumn').textContent = `Points: ${pointsColumn}`;
+        }
+    </script>
 </body>
 </html>
